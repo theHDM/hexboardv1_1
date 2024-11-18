@@ -11,10 +11,10 @@ enum {
 struct key_identification {
   uint column_pin_index;  // 0..x, x = # of colPins
   uint multiplexer_value; // 0..(2^n)-1, n = # of muxPins
-  uint8_t switch_type = unused_pin;   // use enum above
+  uint switch_type = unused_pin;   // use enum above
   int hex_coordinate_x = N_A;   // physical location on board
   int hex_coordinate_y = N_A;   // physical location on board
-  uint associated_pixel = -1;  // as counted on neoPixel strip 
+  int associated_pixel = N_A;  // as counted on neoPixel strip 
 };
 
 // Hardware pin constants
@@ -41,8 +41,8 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 0, 11, digital_key,  -9,  5, 110 },
   { 0, 12, digital_key, -10,  6, 120 },
   { 0, 13, digital_key,  -9,  7, 130 },
-  { 0, 14, hardwired                 }, // off = FW 1.0/1.1, on = FW 1.2
-  { 0, 15, unused_pin                },
+  { 0, 14, hardwired,   N_A,N_A, N_A }, // off = FW 1.0/1.1, on = FW 1.2
+  { 0, 15, unused_pin,  N_A,N_A, N_A },
   //col mux switch type   x   y  pxl
   { 1,  0, digital_key,  -8, -6,   1 },
   { 1,  1, digital_key,  -7, -5,  11 },
@@ -58,8 +58,8 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 1, 11, digital_key,  -7,  5, 111 },
   { 1, 12, digital_key,  -8,  6, 121 },
   { 1, 13, digital_key,  -7,  7, 131 },
-  { 1, 14, unused_pin                },
-  { 1, 15, unused_pin                },
+  { 1, 14, unused_pin,  N_A,N_A, N_A },
+  { 1, 15, unused_pin,  N_A,N_A, N_A },
   //col mux switch type   x   y  pxl
   { 2,  0, digital_key,  -6, -6,   2 },
   { 2,  1, digital_key,  -5, -5,  12 },
@@ -75,8 +75,8 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 2, 11, digital_key,  -5,  5, 112 },
   { 2, 12, digital_key,  -6,  6, 122 },
   { 2, 13, digital_key,  -5,  7, 132 },
-  { 2, 14, unused_pin                },
-  { 2, 15, unused_pin                },
+  { 2, 14, unused_pin,  N_A,N_A, N_A },
+  { 2, 15, unused_pin,  N_A,N_A, N_A },
   //col mux switch type   x   y  pxl
   { 3,  0, digital_key,  -4, -6,   3 },
   { 3,  1, digital_key,  -3, -5,  13 },
@@ -92,8 +92,8 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 3, 11, digital_key,  -3,  5, 113 },
   { 3, 12, digital_key,  -4,  6, 123 },
   { 3, 13, digital_key,  -3,  7, 133 },
-  { 3, 14, unused_pin                },
-  { 3, 15, unused_pin                },
+  { 3, 14, unused_pin,  N_A,N_A, N_A },
+  { 3, 15, unused_pin,  N_A,N_A, N_A },
   //col mux switch type   x   y  pxl
   { 4,  0, digital_key,  -2, -6,   4 },
   { 4,  1, digital_key,  -1, -5,  14 },
@@ -109,8 +109,8 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 4, 11, digital_key,  -1,  5, 114 },
   { 4, 12, digital_key,  -2,  6, 124 },
   { 4, 13, digital_key,  -1,  7, 134 },
-  { 4, 14, unused_pin                },
-  { 4, 15, unused_pin                },
+  { 4, 14, unused_pin,  N_A,N_A, N_A },
+  { 4, 15, unused_pin,  N_A,N_A, N_A },
   //col mux switch type   x   y  pxl
   { 5,  0, digital_key,   0, -6,   5 },
   { 5,  1, digital_key,   1, -5,  15 },
@@ -126,8 +126,8 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 5, 11, digital_key,   1,  5, 115 },
   { 5, 12, digital_key,   0,  6, 125 },
   { 5, 13, digital_key,   1,  7, 135 },
-  { 5, 14, unused_pin                },
-  { 5, 15, unused_pin                },
+  { 5, 14, unused_pin,  N_A,N_A, N_A },
+  { 5, 15, unused_pin,  N_A,N_A, N_A },
   //col mux switch type   x   y  pxl
   { 6,  0, digital_key,   2, -6,   6 },
   { 6,  1, digital_key,   3, -5,  16 },
@@ -143,8 +143,8 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 6, 11, digital_key,   3,  5, 116 },
   { 6, 12, digital_key,   2,  6, 126 },
   { 6, 13, digital_key,   3,  7, 136 },
-  { 6, 14, unused_pin                },
-  { 6, 15, unused_pin                },
+  { 6, 14, unused_pin,  N_A,N_A, N_A },
+  { 6, 15, unused_pin,  N_A,N_A, N_A },
   //col mux switch type   x   y  pxl
   { 7,  0, digital_key,   4, -6,   7 },
   { 7,  1, digital_key,   5, -5,  17 },
@@ -160,8 +160,8 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 7, 11, digital_key,   5,  5, 117 },
   { 7, 12, digital_key,   4,  6, 127 },
   { 7, 13, digital_key,   5,  7, 137 },
-  { 7, 14, unused_pin                },
-  { 7, 15, unused_pin                },
+  { 7, 14, unused_pin,  N_A,N_A, N_A },
+  { 7, 15, unused_pin,  N_A,N_A, N_A },
   //col mux switch type   x   y  pxl
   { 8,  0, digital_key,   6, -6,   8 },
   { 8,  1, digital_key,   7, -5,  18 },
@@ -177,8 +177,8 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 8, 11, digital_key,   7,  5, 118 },
   { 8, 12, digital_key,   6,  6, 128 },
   { 8, 13, digital_key,   7,  7, 138 },
-  { 8, 14, unused_pin                },
-  { 8, 15, unused_pin                },
+  { 8, 14, unused_pin,  N_A,N_A, N_A },
+  { 8, 15, unused_pin,  N_A,N_A, N_A },
   //col mux switch type   x   y  pxl
   { 9,  0, digital_key,   8, -6,   9 },
   { 9,  1, digital_key,   9, -5,  19 },
@@ -194,22 +194,22 @@ const std::vector<key_identification> config_hexboard_layout = {
   { 9, 11, digital_key,   9,  5, 119 },
   { 9, 12, digital_key,   8,  6, 129 },
   { 9, 13, digital_key,   9,  7, 139 },
-  { 9, 14, unused_pin                },
-  { 9, 15, unused_pin                }
+  { 9, 14, unused_pin,  N_A,N_A, N_A },
+  { 9, 15, unused_pin,  N_A,N_A, N_A },
 };
 
-const uint8_t rotaryPinA = 20;
-const uint8_t rotaryPinB = 21;
-const uint8_t rotaryPinC = 24;
+const uint rotaryPinA = 20;
+const uint rotaryPinB = 21;
+const uint rotaryPinC = 24;
 
 const uint ledCount = 140;
-const uint8_t ledPin = 22;
+const uint ledPin = 22;
 
-const uint8_t piezoPin = 23;
-const uint8_t audioJackPin = 25;
+const uint piezoPin = 23;
+const uint audioJackPin = 25;
 
-const uint8_t OLED_sdaPin = 16;
-const uint8_t OLED_sclPin = 17;
+const uint OLED_sdaPin = 16;
+const uint OLED_sclPin = 17;
 
 // These are timing constants that are hardware dependent.
 // If you use different components you may need to change
