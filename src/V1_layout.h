@@ -16,13 +16,14 @@
 */
 class layoutDef {
 public:
-  std::string name;    // limit is 17 characters for GEM menu
+  str name;    // limit is 17 characters for GEM menu
   bool isPortrait;     // affects orientation of the GEM menu only.
-  byte hexMiddleC;     // instead of "what note is button 1", "what button is the middle"
-  int8_t acrossSteps;  // defined this way to be compatible with original v1.1 firmare
-  int8_t dnLeftSteps;  // defined this way to be compatible with original v1.1 firmare
-  byte tuning;         // index of the tuning that this layout is designed for
-};
+  // consider expressing as hex_t = {0,0};
+  uint hexMiddleC;     // instead of "what note is button 1", "what button is the middle"
+  int acrossSteps;  // defined this way to be compatible with original v1.1 firmware
+  int dnLeftSteps;  // defined this way to be compatible with original v1.1 firmware
+  uint tuning;         // index of the tuning that this layout is designed for
+}; 
 /*
   Isomorphic layouts are defined by
   establishing where the center of the
@@ -31,7 +32,7 @@ public:
   across or down diagonally.
 */
 layoutDef layoutOptions[] = {
-  { "Wicki-Hayden",      1, 64,   2,  -7, TUNING_12EDO },
+  { "Wicki-Hayden",      1, 64,   2,  -7, TUNING_12EDO }, // middleC {-1,0}
   { "Harmonic Table",    0, 75,  -7,   3, TUNING_12EDO },
   { "Janko",             0, 65,  -1,  -1, TUNING_12EDO },
   { "Gerhard",           0, 65,  -1,  -3, TUNING_12EDO },
