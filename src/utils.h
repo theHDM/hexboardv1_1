@@ -53,7 +53,7 @@ using str = std::string;
 // a specific type such as "Arduino::byte" is required
 #include <vector>
 // specifically when we only need small positive integers
-using byte_vec = std::vector<uint8_t>;
+using byte_vec = std::vector<uint>; // using uint_vec
 // generic integer vector
 using int_vec = std::vector<int>;
 // generic integer matrix
@@ -162,7 +162,7 @@ hex_t unitHex[] = {
   // E       NE      NW      W       SW      SE
   { 2, 0},{ 1,-1},{-1,-1},{-2, 0},{-1, 1},{ 1, 1}
 };
-enum {N_A = 255};
+enum {N_A = -128};
 hex_t not_a_hex = {N_A,N_A};
 
 #include <cmath>
