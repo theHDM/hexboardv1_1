@@ -146,8 +146,15 @@ struct hex_t {
 	hex_t operator*(const int& rhs) const {
 		return hex_t(rhs * x, rhs * y);
 	}
+  // subtraction is + hex*-1
+    hex_t operator-(const hex_t& rhs) const {
+        return *this + (rhs * -1);
+    }
 };
-
+// dot product of two vectors (i.e. distance & # of musical steps per direction)
+int dot_product(const hex_t& A, const hex_t& B) {
+    return (A.x * B.x) + (A.y * B.y);
+}
 // keep this as a non-class enum because
 // we need to be able to cycle directions
 enum {
