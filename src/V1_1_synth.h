@@ -167,7 +167,7 @@ struct oscillator {
 
 
 
-uint8_t arpeggiatingNow = UNUSED_NOTE;         // if this is 255, set to off (0% duty cycle)
+int arpeggiatingNow = UNUSED_NOTE;         // if this is 255, set to off (0% duty cycle)
 uint64_t arpeggiateTime = 0;                // Used to keep track of when this note started playing in ARPEG mode
 uint64_t arpeggiateLength = 65536;         // in microseconds. approx a 1/32 note at 114 BPM
 
@@ -241,38 +241,53 @@ synth_obj synth;
 // return the hex index of the next held note.
 // kind of messy but works.
 uint8_t findNextHeldNote() {
-  for (uint8_t i = 1; i <= pinGrid.buttonCount(); ++i) {
-    uint8_t j = positiveMod(arpeggiatingNow + i, BTN_COUNT);
-    if ((hexBoard.buttons[j].MIDIch) && (!hexBoard.buttons[j].isCmd)) {
-      return j;
+  // arpeggiatingNow refers to a pixel number currently.
+  // so first find the note that matches it.
+  // then iterate through all the notes until next note is found,
+  // and return its pixel.
+/*
+  auto findArpeggiatingNow = &hexBoard.key_at_pixel(arpeggiatingNow);
+  
+  if (findArpeggiatingNow != hexBoard.keys.end() - 1) {
+    for (auto i = findArpeggiatingNow + 1; i != hexBoard.keys.end(); ++i) {
+      if (i->MIDIch) {
+        return i->pixel;
+      }
     }
   }
+  if (findArpeggiatingNow > hexBoard.keys.begin()) {
+    for (auto i = hexBoard.keys.begin(); i != findArpeggiatingNow; ++i) {
+      if (i->MIDIch) {
+        return i->pixel;
+      }
+    }
+  }
+*/
   return UNUSED_NOTE;
 }
-void replaceMonoSynthWith(uint8_t x) {
+
+void replaceMonoSynthWith(int x) {
   if (arpeggiatingNow == x) return;
-  hexBoard.buttons[arpeggiatingNow].synthCh = 0;
+  hexBoard.key_at_pixel(arpeggiatingNow).synthCh = 0;
   arpeggiatingNow = x;
   if (arpeggiatingNow != UNUSED_NOTE) {
-    hexBoard.buttons[arpeggiatingNow].synthCh = 1;
-    synth.setFreq(hexBoard.buttons[arpeggiatingNow].frequency, 1);
+    hexBoard.key_at_pixel(arpeggiatingNow).synthCh = 1;
+    synth.setFreq(hexBoard.key_at_pixel(arpeggiatingNow).frequency, 1);
   } else {
     synth.setFreq(0, 1);
   }
 }
 
-
-
 // pass all notes thru synth again if the pitch bend changes
 void updateSynthWithNewFreqs() {
-  for (auto h : hexBoard.buttons) {
-    if ((!(h.isCmd)) && h.synthCh) {
+  for (auto& h : hexBoard.keys) {
+    if (h.synthCh) {
       synth.setFreq(h.frequency, h.synthCh);
     }
   }
 }
 
-void trySynthNoteOn(buttonDef& h) {
+void trySynthNoteOn(music_key_t& h) {
   if (playbackMode != SYNTH_OFF) {
     if (playbackMode == SYNTH_POLY) {
       // operate independently of MIDI
@@ -290,9 +305,9 @@ void trySynthNoteOn(buttonDef& h) {
     }
   }
 }
-void trySynthNoteOff(buttonDef& h) {
+void trySynthNoteOff(music_key_t& h) {
   if (playbackMode && (playbackMode != SYNTH_POLY)) {
-    if (arpeggiatingNow == h.index) {
+    if (arpeggiatingNow == h.pixel) {
       replaceMonoSynthWith(findNextHeldNote());
     }
   }
@@ -310,11 +325,11 @@ void synth_reset() {
   while (!synth.open_queue.empty()) {
     synth.open_queue.pop_front();
   }
-  for (auto i : synth.channel) {
+  for (auto& i : synth.channel) {
     i.increment = 0;
     i.counter = 0;
   }
-  for (auto h : hexBoard.buttons) {
+  for (auto& h : hexBoard.keys) {
     h.synthCh = 0;
   }
   if (playbackMode == SYNTH_POLY) {

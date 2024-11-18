@@ -24,7 +24,7 @@
   We use pitch bends to retune notes in MPE mode.
   Some setups can adjust to fit this, but some need us to adjust it.
 */
-byte MPEpitchBendSemis = 2;
+uint8_t MPEpitchBendSemis = 2;
 /*
   Create a new instance of the Arduino MIDI Library,
   and attach usb_midi as the transport.
@@ -37,13 +37,13 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, SMIDI);
 #define MIDID_USB 1
 #define MIDID_SER 2
 #define MIDID_BOTH 3
-byte midiD = MIDID_USB | MIDID_SER;
+uint8_t midiD = MIDID_USB | MIDID_SER;
 
 // What program change number we last sent (General MIDI/Roland MT-32)
-byte programChange = 0;
+uint8_t programChange = 0;
 
-std::queue<byte> MPEchQueue;
-byte MPEpitchBendsNeeded; 
+byte_queue MPEchQueue;
+uint8_t MPEpitchBendsNeeded; 
 
 float freqToMIDI(float Hz) {             // formula to convert from Hz to MIDI note
   return 69.0 + 12.0 * log2f(Hz / 440.0);
@@ -55,7 +55,7 @@ float stepsToMIDI(int16_t stepsFromA) {  // return the MIDI pitch associated
   return freqToMIDI(CONCERT_A_HZ) + ((float)stepsFromA * (float)current.tuning().stepSize / 100.0);
 }
 
-void setPitchBendRange(byte Ch, byte semitones) {
+void setPitchBendRange(uint8_t Ch, uint8_t semitones) {
   if (midiD&MIDID_USB) {
       UMIDI.beginRpn(0, Ch);
       UMIDI.sendRpnValue(semitones << 7, Ch);
@@ -73,7 +73,7 @@ void setPitchBendRange(byte Ch, byte semitones) {
   );
 }
 
-void setMPEzone(byte masterCh, byte sizeOfZone) {
+void setMPEzone(uint8_t masterCh, uint8_t sizeOfZone) {
   if (midiD&MIDID_USB) {
       UMIDI.beginRpn(6, masterCh);
       UMIDI.sendRpnValue(sizeOfZone << 7, masterCh);
@@ -113,16 +113,16 @@ void resetTuningMIDI() {
   if (MPEpitchBendsNeeded > 15) {
     setMPEzone(1, 15);   // MPE zone 1 = ch 2 thru 16
     while (!MPEchQueue.empty()) {     // empty the channel queue
-      MPEchQueue.pop();
+      MPEchQueue.pop_front();
     }
-    for (byte i = 2; i <= 16; i++) {
-      MPEchQueue.push(i);           // fill the channel queue
+    for (uint8_t i = 2; i <= 16; i++) {
+      MPEchQueue.push_back(i);           // fill the channel queue
     }
   } else {
     setMPEzone(1, 0);
   }
   // force pitch bend back to the expected range of 2 semitones.
-  for (byte i = 1; i <= 16; i++) {
+  for (uint8_t i = 1; i <= 16; i++) {
     if(midiD&MIDID_USB)UMIDI.sendControlChange(123, 0, i);
     if(midiD&MIDID_SER)SMIDI.sendControlChange(123, 0, i);
     setPitchBendRange(i, MPEpitchBendSemis);   
@@ -141,7 +141,7 @@ void sendMIDIpitchBendToCh1() {
   sendToLog("sent pb wheel value " + std::to_string(pbWheel.curValue) + " to ch 1");
 }
 
-void tryMIDInoteOn(buttonDef& h) {
+void tryMIDInoteOn(music_key_t& h) {
   // this gets called on any non-command hex
   // that is not scale-locked.
   if (!(h.MIDIch)) {    
@@ -153,8 +153,7 @@ void tryMIDInoteOn(buttonDef& h) {
       if (MPEchQueue.empty()) {   // if there aren't any open channels
         sendToLog("MPE queue was empty so did not play a midi note");
       } else {
-        h.MIDIch = MPEchQueue.front();   // value in MIDI terms (1-16)
-        MPEchQueue.pop();
+        h.MIDIch = pop_and_get(MPEchQueue);   // value in MIDI terms (1-16)
       }
     }
     if (h.MIDIch) {
@@ -173,7 +172,7 @@ void tryMIDInoteOn(buttonDef& h) {
   }
 } 
 
-void tryMIDInoteOff(buttonDef& h) {
+void tryMIDInoteOff(music_key_t& h) {
   // this gets called on any non-command hex
   // that is not scale-locked.
   if (h.MIDIch) {    // but just in case, check
@@ -186,7 +185,7 @@ void tryMIDInoteOff(buttonDef& h) {
       " ch " + std::to_string(h.MIDIch)
     );
     if (MPEpitchBendsNeeded > 15) {
-      MPEchQueue.push(h.MIDIch);
+      MPEchQueue.push_back(h.MIDIch);
     }
     h.MIDIch = 0;
   }

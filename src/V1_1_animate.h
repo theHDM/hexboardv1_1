@@ -11,7 +11,7 @@
 //
 // this library works, so far, on ortho coordinates
 
-uint64_t animFrame(buttonDef& h) {     
+uint64_t animFrame(button_t& h) {     
   if (h.timePressed) {          // 2^20 microseconds is close enough to 1 second
     return 1 + (((runTime - h.timePressed) * animationFPS) >> 20);
   } else {
@@ -19,14 +19,14 @@ uint64_t animFrame(buttonDef& h) {
   }
 }
 void flagToAnimate(hex_t x) {
-  if (hexBoard.coord_in_bounds(x)) {
+  if (hexBoard.in_bounds(x)) {
     hexBoard.button_at_coord(x).animate = 1;
   }
 }
-void animateMirror(buttonDef& h) {
-  if ((!(h.isCmd)) && (h.MIDIch)) {                   // that is a held note     
-    for (auto j : hexBoard.buttons) {
-      if ((j.pixel >= 0) && (!(j.isCmd)) && (!(j.MIDIch))) {
+void animateMirror(music_key_t& h) {
+  if (h.MIDIch) {                   // that is a held note     
+    for (auto j : hexBoard.keys) {
+      if ((j.pixel >= 0) && (!(j.MIDIch))) {
         int16_t delta = h.stepsFromC - j.stepsFromC;   // look at difference between notes
         if (animationType == ANIMATE_OCTAVE) {              // set octave diff to zero if need be
           delta = positiveMod(delta, current.tuning().cycleLength);
@@ -37,23 +37,23 @@ void animateMirror(buttonDef& h) {
   }
 }
 
-void animateOrbit(buttonDef& h) {
-  if ((!(h.isCmd)) && (h.MIDIch) && ((h.inScale) || (!scaleLock))) {    // that is a held note
+void animateOrbit(music_key_t& h) {
+  if (h.MIDIch && (h.inScale || (!scaleLock))) {    // that is a held note
     uint8_t dir = (animFrame(h) % 6);
-    flagToAnimate(h.coord + orthoUnit[dir]);       // different neighbor each frame
+    flagToAnimate(h.coord + unitHex[dir]);       // different neighbor each frame
   }
 }
 
-void animateRadial(buttonDef& h) {
-  if (!(h.isCmd) && (h.inScale || !scaleLock)) {                       // that is a note
+void animateRadial(music_key_t& h) {
+  if (h.inScale || (!scaleLock)) {                       // that is a note
     uint64_t radius = animFrame(h);
     if ((radius > 0) && (radius < 16)) {                              // played in the last 16 frames
       uint8_t steps = ((animationType == ANIMATE_SPLASH) ? radius : 1);  // star = 1 step to next corner; ring = 1 step per hex
-      hex_t turtle = h.coord + (orthoUnit[dir_sw] * radius);
+      hex_t turtle = h.coord + (unitHex[dir_sw] * radius);
       for (uint8_t dir = dir_e; dir < 6; dir++) {           // walk along the ring in each of the 6 hex directions
         for (uint8_t i = 0; i < steps; i++) {                            // # of steps to the next corner 
           flagToAnimate(turtle);                         // flag for animation
-          turtle = turtle + (orthoUnit[dir] * (radius / steps));
+          turtle = turtle + (unitHex[dir] * (radius / steps));
         }
       }
     }
@@ -61,7 +61,7 @@ void animateRadial(buttonDef& h) {
 }
 void animate_calculate_pixels() {
   if (animationType) {
-    for (auto h : hexBoard.buttons) {
+    for (auto& h : hexBoard.keys) {
       // clear animation flags
       h.animate = 0;
       if (h.pixel >= 0) {

@@ -8,8 +8,8 @@
 // run this if the layout, key, or transposition changes, but not if color or scale changes
 void assignPitches() {     
   sendToLog("assignPitch was called:");
-  for (auto& h : hexBoard.buttons) {
-    if (!(h.isCmd) && (h.pixel >= 0)) {
+  for (auto& h : hexBoard.keys) {
+    if (h.pixel >= 0) {
       // steps is the distance from C
       // the stepsToMIDI function needs distance from A4
       // it also needs to reflect any transposition, but
@@ -30,8 +30,8 @@ void assignPitches() {
 }
 void applyScale() {
   sendToLog("applyScale was called:");
-  for (auto& h : hexBoard.buttons) {
-    if (!(h.isCmd) && (h.pixel >= 0)) {
+  for (auto& h : hexBoard.keys) {
+    if (h.pixel >= 0) {
       if (current.scale().tuning == ALL_TUNINGS) {
         h.inScale = 1;
       } else {
@@ -55,10 +55,10 @@ void applyScale() {
 }
 void applyLayout() {       // call this function when the layout changes
   sendToLog("buildLayout was called:");
-  for (auto& h : hexBoard.buttons) {
-    if (!(h.isCmd) && (h.pixel >= 0)) {
-      int8_t distCol = h.coord.q - hexBoard.button_on_pixel(current.layout().hexMiddleC).coord.q;
-      int8_t distRow = h.coord.r - hexBoard.button_on_pixel(current.layout().hexMiddleC).coord.r;
+  for (auto& h : hexBoard.keys) {
+    if (h.pixel >= 0) {
+      int8_t distCol = h.coord.x - hexBoard.button_at_pixel(current.layout().hexMiddleC).coord.x;
+      int8_t distRow = h.coord.y - hexBoard.button_at_pixel(current.layout().hexMiddleC).coord.y;
       h.stepsFromC = ((distCol * current.layout().acrossSteps) 
         + (distRow * (current.layout().acrossSteps + (2 * current.layout().dnLeftSteps)))) / 2;  
     }

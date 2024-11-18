@@ -108,6 +108,7 @@ void setup() {
   //  Set up the USB (Serial, pin 0) and MIDI-out (Serial1, pin 1) as MIDI objects
   MIDI_setup();
   //  Set up the hex grid object, and set the pins that will read the button states
+  delay(10000);
   gridSystem_setup();
   //  Based on the default layout, populate grid with notes and colors
   applyLayout(); // see V1.assignment.h

@@ -5,9 +5,8 @@
   the hex buttons.
 */
 #include <Adafruit_NeoPixel.h>  // library of code to interact with the LED array
-#define LED_PIN 22
 
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);  
+Adafruit_NeoPixel strip(ledCount, ledPin, NEO_GRB + NEO_KHZ800);  
 int32_t rainbowDegreeTime = 65'536; // microseconds to go through 1/360 of rainbow
 /*
   This is actually a hacked together approximation
@@ -94,31 +93,29 @@ colorDef kiteColor(float cents) {
 }
 
 void setLEDcolorCodes() {
-  for (auto& h : hexBoard.buttons) {
-    if (!(h.isCmd)) {
-      colorDef setColor;
-      byte paletteIndex = positiveMod(h.stepsFromC,current.tuning().cycleLength);
-      if (paletteBeginsAtKeyCenter) {
-        paletteIndex = current.keyDegree(paletteIndex);
-      }
-      switch (colorMode) {
-        case TIERED_COLOR_MODE: // This mode sets the color based on the palettes defined above.
-          setColor = palette[current.tuningIndex].getColor(paletteIndex);
-          break;
-        case RAINBOW_MODE:      // This mode assigns the root note as red, and the rest as saturated spectrum colors across the rainbow.
-          setColor = { 360 * ((float)paletteIndex / (float)current.tuning().cycleLength), SAT_VIVID, VALUE_NORMAL };
-          break;
-        case ALTERNATE_COLOR_MODE:
-          setColor = kiteColor(current.tuning().stepSize * paletteIndex);
-          break;
-      }
-      h.LEDcodeRest = getLEDcode(setColor);
-      h.LEDcodePlay = getLEDcode(setColor.tint()); 
-      h.LEDcodeDim  = getLEDcode(setColor.shade());  
-      setColor = {HUE_NONE,SAT_BW,VALUE_BLACK};
-      h.LEDcodeOff  = getLEDcode(setColor);                // turn off entirely
-      h.LEDcodeAnim = h.LEDcodePlay;
+  for (auto& h : hexBoard.keys) {
+    colorDef setColor;
+    byte paletteIndex = positiveMod(h.stepsFromC,current.tuning().cycleLength);
+    if (paletteBeginsAtKeyCenter) {
+      paletteIndex = current.keyDegree(paletteIndex);
     }
+    switch (colorMode) {
+      case TIERED_COLOR_MODE: // This mode sets the color based on the palettes defined above.
+        setColor = palette[current.tuningIndex].getColor(paletteIndex);
+        break;
+      case RAINBOW_MODE:      // This mode assigns the root note as red, and the rest as saturated spectrum colors across the rainbow.
+        setColor = { 360 * ((float)paletteIndex / (float)current.tuning().cycleLength), SAT_VIVID, VALUE_NORMAL };
+        break;
+      case ALTERNATE_COLOR_MODE:
+        setColor = kiteColor(current.tuning().stepSize * paletteIndex);
+        break;
+    }
+    h.LEDcodeRest = getLEDcode(setColor);
+    h.LEDcodePlay = getLEDcode(setColor.tint()); 
+    h.LEDcodeDim  = getLEDcode(setColor.shade());  
+    setColor = {HUE_NONE,SAT_BW,VALUE_BLACK};
+    h.LEDcodeOff  = getLEDcode(setColor);                // turn off entirely
+    h.LEDcodeAnim = h.LEDcodePlay;
   }
   sendToLog("LED codes re-calculated.");
 }
@@ -173,7 +170,7 @@ void resetWheelLEDs() {
   }
 }
 
-uint32_t applyNotePixelColor(buttonDef& h) {
+uint32_t applyNotePixelColor(music_key_t& h) {
        if (h.animate) { return h.LEDcodeAnim;} 
   else if (h.MIDIch)  { return h.LEDcodePlay;} 
   else if (h.inScale) { return h.LEDcodeRest;} 
@@ -189,10 +186,8 @@ void LED_setup() {
 }
 
 void LED_update_pixels() {   
-  for (auto& h : hexBoard.buttons) {
-    if (!(h.isCmd)) {
-      strip.setPixelColor(h.pixel,applyNotePixelColor(h));
-    }
+  for (auto& h : hexBoard.keys) {
+    strip.setPixelColor(h.pixel,applyNotePixelColor(h));
   }
   resetVelocityLEDs();
   resetWheelLEDs();

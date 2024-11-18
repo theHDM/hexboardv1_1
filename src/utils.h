@@ -110,51 +110,41 @@ inline T2 lerp_over_map(const std::map<T1, T2>& lerp_map, T1 pos) {
 // a hexboard obviously needs to have a class of hexagon coordinates.
 // https://www.redblobgames.com/grids/hexagons/ for more details.
 //
-// Ortho coordinate system:
-// 
-//                     | -r axis
+//                     | -y axis
 //              [-1,-1] [ 1,-1]
-//  -q axis [-2, 0] [ 0, 0] [ 2, 0]  +q axis
+//  -x axis [-2, 0] [ 0, 0] [ 2, 0]  +x axis
 //              [-1, 1] [ 1, 1]
-//                     | +r axis
-//
-// Axial coordinate system:
-//
-//   hex(q,r)    \ -r axis
-//              [ 0,-1] [ 1,-1]
-//  -q axis [-1, 0] [ 0, 0] [ 1, 0]  +q axis
-//              [-1, 1] [ 0, 1]
-//                          \ +r axis
-//
+//                     | +y axis
+
 struct hex_t { 
-	int q;      
-	int r;
-	hex_t(int q=0, int r=0) : q(q), r(r) {}
+	int x;      
+	int y;
+	hex_t(int x=0, int y=0) : x(x), y(y) {}
   // overload the = operator
   hex_t& operator=(const hex_t& rhs) {
-		q = rhs.q;
-		r = rhs.r;
+		x = rhs.x;
+		y = rhs.y;
 		return *this;
 	}
   // two hexes are == if their coordinates are ==
 	bool operator==(const hex_t& rhs) const {
-		return (q == rhs.q && r == rhs.r);
+		return (x == rhs.x && y == rhs.y);
 	}
   // left-to-right, top-to-bottom order
   bool operator<(const hex_t& rhs) const {
-    if (r == rhs.r) {
-      return (q < rhs.q);
+    if (y == rhs.y) {
+      return (x < rhs.x);
     } else {
-      return (r < rhs.r);
+      return (y < rhs.y);
     }
   }
   // you can + two hexes by adding the coordinates
 	hex_t operator+(const hex_t& rhs) const {
-		return hex_t(q + rhs.q, r + rhs.r);
+		return hex_t(x + rhs.x, y + rhs.y);
 	}
   // you can * a hex by a scalar to multi-step
 	hex_t operator*(const int& rhs) const {
-		return hex_t(rhs * q, rhs * r);
+		return hex_t(rhs * x, rhs * y);
 	}
 };
 
@@ -168,16 +158,13 @@ enum {
 	dir_sw = 4,
 	dir_se = 5
 };
-hex_t axialUnit[] = {
-  // E       NE      NW      W       SW      SE
-  { 1, 0},{ 1,-1},{ 0,-1},{-1, 0},{-1, 1},{ 0, 1}
-};
-hex_t orthoUnit[] = {
+hex_t unitHex[] = {
   // E       NE      NW      W       SW      SE
   { 2, 0},{ 1,-1},{-1,-1},{-2, 0},{-1, 1},{ 1, 1}
 };
+enum {N_A = 255};
+hex_t not_a_hex = {N_A,N_A};
 
-// thus, hex += 2 * axialUnit or orthoUnit [dir_west] means shift hex 2 spaces to the left
 #include <cmath>
 // trigonometric functions we need
 struct polar {

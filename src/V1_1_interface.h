@@ -21,50 +21,62 @@ void interface_interpret_hexes() {
     return;
   }
   // read in the new pin state completely first
-  for (auto& h : hexBoard.buttons) {
-    h.prevBtnState = h.btnState;
+  for (auto& h : hexBoard.keys) {
+    h.prevState = h.btnState;
+    int r = pinGrid.read_key_state(h.hwKey);
+    h.btnState = (r == LOW);
+  }
+  for (auto& h : hexBoard.commands) {
+    h.prevState = h.btnState;
     int r = pinGrid.read_key_state(h.hwKey);
     h.btnState = (r == LOW);
   }
   // release pingrid object
   pinGrid.resume_background_process();
   // then cycle each key and perform actions  
-  for (auto& h : hexBoard.buttons) {
-    switch ((h.btnState << 1) | h.prevBtnState) {
-      case BTN_STATE_NEWPRESS: // just pressed
-        if (h.isCmd) {
-          switch (h.note) {
-            case CMDB + 3:
-              toggleWheel = !toggleWheel;
-              break;
-            case HARDWARE_V1_2:
-              Hardware_Version = h.note;
-              setupHardware();
-              break;
-            default:
-              // the rest should all be taken care of within the wheelDef structure
-              break;
-          }
-        } else if (h.inScale || (!scaleLock)) {
+  for (auto& h : hexBoard.keys) {
+    sendToLog(
+      " pxl " + std::to_string(h.pixel)
+      + " hw " + std::to_string(h.hwKey)
+      + " hex " + std::to_string(h.coord.x) + "," + std::to_string(h.coord.y)
+      + " note " + std::to_string(h.note)
+      + " scal " + std::to_string(h.inScale)
+      + " btn " + std::to_string((h.btnState << 1) | h.prevState)
+    );
+    if (h.inScale || (!scaleLock)) {
+      switch ((h.btnState << 1) | h.prevState) {
+        case 2: // just pressed
           tryMIDInoteOn(h);
           trySynthNoteOn(h);
-        }
-        break;
-      case BTN_STATE_RELEASED: // just released
-        if (h.isCmd) {
-          // nothing; should all be taken care of within the wheelDef structure
-        } else if (h.inScale || (!scaleLock)) {
+          break;
+        case 1: // just released    
           tryMIDInoteOff(h);
           trySynthNoteOff(h); 
+      }
+    }
+  }
+  for (auto& h : hexBoard.commands) {
+    sendToLog(
+      " pxl " + std::to_string(h.pixel)
+      + " hw " + std::to_string(h.hwKey)
+      + " hex " + std::to_string(h.coord.x) + "," + std::to_string(h.coord.y)
+      + " cmd " + std::to_string(h.cmd)
+      + " btn " + std::to_string((h.btnState << 1) | h.prevState)
+    );
+    switch ((h.btnState << 1) | h.prevState) {
+      case 2: // just pressed
+        switch (h.cmd) {
+          case CMDB + 3:
+            toggleWheel = !toggleWheel;
+            break;
+          default:
+            // the rest should all be taken care of within the wheelDef structure
+            break;
         }
-        break;
-      case BTN_STATE_HELD: // held
-        break;
       default: // inactive
         break;
     }
   }
-  
 }
 
 void interface_update_wheels() {  
