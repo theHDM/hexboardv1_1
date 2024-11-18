@@ -55,6 +55,12 @@ float stepsToMIDI(int16_t stepsFromA) {  // return the MIDI pitch associated
   return freqToMIDI(CONCERT_A_HZ) + ((float)stepsFromA * (float)current.tuning().stepSize / 100.0);
 }
 
+// wrapper to pass message to one or both MIDI instances
+void routeMIDImsg();
+// research how to extract the message from the functions
+// instead of just sending it.
+// also need to take into account MPE, MIDI 2.0, round off, and tuning table
+
 void setPitchBendRange(uint8_t Ch, uint8_t semitones) {
   if (midiD&MIDID_USB) {
       UMIDI.beginRpn(0, Ch);
