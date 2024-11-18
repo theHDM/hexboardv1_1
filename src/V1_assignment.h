@@ -51,8 +51,13 @@ void applyScale() {
 }
 void applyLayout() {       // call this function when the layout changes
   sendToLog("buildLayout was called:");
+  hex_t middleC = hexBoard.button_at_pixel(current.layout().hexMiddleC);
+  hex_t stepVector = {
+    current.layout().acrossSteps / 2,
+    current.layout().dnLeftSteps + (current.layout().acrossSteps / 2)
+  };
   for (auto& h : hexBoard.keys) {
-    // TBD
+    h.stepsFromC = dot_product(stepVector, h.coord - middleC);
   }
   applyScale();        // when layout changes, have to re-apply scale and re-apply LEDs
   assignPitches();     // same with pitches
