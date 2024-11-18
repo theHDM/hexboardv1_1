@@ -1,11 +1,12 @@
 #pragma once
 #include "Arduino.h"
 #include "Wire.h"
+#include "config.h"
+#include "hwKeys.h" // use the same "linear_index" function as the hardware read, to ensure compatible
 #include <algorithm>
 
 // Effective Nov 15, 2024, the portion of the code related to setting the key pins
 // is moved to "hwKeys.h". This section now focuses on the grid object in a theoretical sense.
-
 
 // grandparent structure for a mux/pin input
 // a shorted (hardwired) pin is the minimal example
@@ -21,8 +22,7 @@ struct switch_t {
 // set pixel negative and the LED routine will
 // skip this object. pixel values should still be
 // unique among physical button switches.
-// there is not a error check for this so
-// be careful
+// there is not a error check for this so be careful
 struct button_t : switch_t {
   hex_t coord; // physical location
   uint pixel; // associated pixel
@@ -64,8 +64,7 @@ struct other_cmd_t : button_t {
 };
 
 // structure to collect all inputs from 
-// the grid, and groups the switches
-// by type.
+// the grid, and groups the switches by type.
 struct switchboard_t {
   std::vector<music_key_t> keys;
   std::vector<other_cmd_t> commands;
@@ -99,6 +98,17 @@ struct switchboard_t {
 };
 
 // the command wheel interface won't work in v2
+// because members of vector objects are not
+// static in memory. the simple answer
+// is for the command keys to pass its key state
+// when it's pressed or released, and then this
+// should otherwise work as normal.
+
+// consider setting this as a setup parameter for
+// the wheel constructor. OR.
+// the wheel constructor is updated only
+// after this many microseconds on a global
+// loop (like LEDs).
 /*
   When sending smoothly-varying pitch bend
   or modulation messages over MIDI, the
